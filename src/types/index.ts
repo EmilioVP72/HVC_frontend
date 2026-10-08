@@ -32,3 +32,30 @@ export interface FitnessMetric {
   trend: 'up' | 'down' | 'neutral';
   icon: string;
 }
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  role: 'member' | 'trainer' | 'admin';
+  createdAt?: string;
+}
+
+export interface AuthSession {
+  user: User;
+  token: string;
+}
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}

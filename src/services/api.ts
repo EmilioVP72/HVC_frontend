@@ -1,4 +1,4 @@
-import { ApiResponse, WorkoutRoutine } from '../types';
+import { ApiResponse, WorkoutRoutine, AuthSession, LoginPayload, RegisterPayload } from '../types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -14,6 +14,36 @@ export async function fetchHealth(): Promise<{ status: string; uptime: number }>
   }
 }
 
+export async function loginApi(payload: LoginPayload): Promise<AuthSession> {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const json: ApiResponse<AuthSession> = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || 'Error al iniciar sesión');
+  }
+
+  return json.data;
+}
+
+export async function registerApi(payload: RegisterPayload): Promise<AuthSession> {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const json: ApiResponse<AuthSession> = await res.json();
+  if (!res.ok || !json.success) {
+    throw new Error(json.message || 'Error en el registro');
+  }
+
+  return json.data;
+}
+
 export async function fetchWorkoutRoutines(): Promise<WorkoutRoutine[]> {
   try {
     const res = await fetch(`${API_BASE_URL}/workouts`, {
@@ -24,7 +54,6 @@ export async function fetchWorkoutRoutines(): Promise<WorkoutRoutine[]> {
     return json.data || [];
   } catch (error) {
     console.warn('Backend no disponible, usando respaldo offline:', error);
-    // Fallback data para SSR o cuando el backend está arrancando
     return [
       {
         id: 'gold-fallback-1',

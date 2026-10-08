@@ -4,10 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { Navbar } from '../components/layout/Navbar';
 import { StatCard } from '../components/ui/StatCard';
 import { RoutineCard } from '../components/fitness/RoutineCard';
+import { AuthScreen } from '../components/auth/AuthScreen';
 import { WorkoutRoutine } from '../types';
 import { fetchHealth, fetchWorkoutRoutines } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
   const [apiStatus, setApiStatus] = useState<'online' | 'offline' | 'checking'>('checking');
   const [routines, setRoutines] = useState<WorkoutRoutine[]>([]);
   const [selectedRoutine, setSelectedRoutine] = useState<WorkoutRoutine | null>(null);
@@ -35,15 +38,55 @@ export default function Home() {
     setCurrentSet((prev) => (prev < 4 ? prev + 1 : 1));
   };
 
+  // 1. Estado de carga inicial de autenticación
+  if (isLoading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#070708',
+          gap: '16px',
+        }}
+      >
+        <div
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            border: '3px solid rgba(212, 175, 55, 0.2)',
+            borderTopColor: 'var(--gold-400)',
+            animation: 'spin 0.8s linear infinite',
+          }}
+        />
+        <span style={{ color: 'var(--gold-400)', fontSize: '0.88rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+          Cargando Aurum Fitness...
+        </span>
+        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  // 2. Si el usuario NO está autenticado, el Login/Registro es lo PRIMERO que ve
+  if (!isAuthenticated) {
+    return <AuthScreen />;
+  }
+
+  // 3. Usuario autenticado: Dashboard Principal
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar apiStatus={apiStatus} />
+      <Navbar apiStatus={apiStatus} user={user} onLogout={logout} />
 
       <main style={{ flex: 1, maxWidth: '1240px', margin: '0 auto', width: '100%', padding: '40px 24px' }}>
         {/* HERO SECTION */}
         <section style={{ textAlign: 'center', marginBottom: '50px', position: 'relative' }}>
           <div style={{ marginBottom: '16px' }}>
-            <span className="gold-badge">Arquitectura Full Stack Elite</span>
+            <span className="gold-badge">
+              ⚡ Bienvenido Atleta Gold: {user?.firstName} {user?.lastName}
+            </span>
           </div>
 
           <h1
@@ -55,7 +98,7 @@ export default function Home() {
               marginBottom: '20px',
             }}
           >
-            Potencia Tu Rendimiento con <br />
+            Tu Centro de Alto Rendimiento <br />
             <span className="gold-gradient-text">Aurum Fitness Suite</span>
           </h1>
 
@@ -68,9 +111,8 @@ export default function Home() {
               lineHeight: 1.6,
             }}
           >
-            Plataforma fitness de alta ingeniería construida con un backend robusto en{' '}
-            <strong style={{ color: 'var(--gold-400)' }}>Express.js & TypeScript</strong> y un cliente reactivo de última generación en{' '}
-            <strong style={{ color: 'var(--gold-400)' }}>Next.js (App Router)</strong>.
+            Sesión activa para <strong style={{ color: 'var(--gold-400)' }}>{user?.email}</strong>. Gestiona tus rutinas de
+            hipertrofia y sobrecarga progresiva respaldadas en Supabase PostgreSQL.
           </p>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
@@ -78,7 +120,7 @@ export default function Home() {
               Explorar Rutinas Doradas ⚡
             </a>
             <a href="#arquitectura" className="btn-dark">
-              Ver Estructura de Proyecto 📂
+              Ver Arquitectura del Sistema 📂
             </a>
           </div>
         </section>
@@ -244,10 +286,10 @@ export default function Home() {
           }}
         >
           <div style={{ marginBottom: '24px' }}>
-            <span className="gold-badge" style={{ marginBottom: '8px' }}>Ingeniería de Software</span>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Estructura del Proyecto Full Stack</h2>
+            <span className="gold-badge" style={{ marginBottom: '8px' }}>Ingeniería de Software & Seguridad</span>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Arquitectura por Capas con Supabase</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-              Arquitectura modular desacoplada con backend en Express (TypeScript) y frontend en Next.js (App Router).
+              Autenticación segura y desacoplada mediante DTOs, validaciones Zod, capa de servicio y repositorio Supabase.
             </p>
           </div>
 
@@ -266,17 +308,16 @@ export default function Home() {
                 border: '1px solid var(--border-subtle)',
               }}
             >
-              <h4 style={{ color: 'var(--gold-400)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                📁 backend/ (Express + TypeScript)
+              <h4 style={{ color: 'var(--gold-400)', marginBottom: '12px' }}>
+                📁 backend/ (Express + Supabase)
               </h4>
               <ul style={{ listStyle: 'none', fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <li>🔹 <code>src/config/</code> : Variables de entorno y ajustes de servidor</li>
-                <li>🔹 <code>src/controllers/</code> : Manejo de peticiones HTTP (Workout, Auth)</li>
-                <li>🔹 <code>src/services/</code> : Capa de lógica de negocio desacoplada</li>
-                <li>🔹 <code>src/routes/</code> : Definición de endpoints REST</li>
-                <li>🔹 <code>src/middlewares/</code> : Seguridad (Helmet, CORS, Error Handlers)</li>
-                <li>🔹 <code>src/types/</code> : Tipado fuerte TypeScript</li>
-                <li>🔹 <code>src/server.ts & app.ts</code> : Punto de entrada y configuración Express</li>
+                <li>🔹 <code>routes/auth.routes.ts</code>: Endpoints <code>/register</code>, <code>/login</code>, <code>/me</code></li>
+                <li>🔹 <code>validators/auth.validator.ts</code>: Esquemas Zod estrictos</li>
+                <li>🔹 <code>controllers/auth.controller.ts</code>: Delegación pura, sin lógica pesada</li>
+                <li>🔹 <code>services/auth.service.ts</code>: Reglas de negocio y sanitización</li>
+                <li>🔹 <code>repositories/user.repository.ts</code>: Persistencia con Supabase Auth/DB</li>
+                <li>🔹 <code>config/supabase.ts</code>: Cliente oficial <code>@supabase/supabase-js</code></li>
               </ul>
             </div>
 
@@ -288,16 +329,15 @@ export default function Home() {
                 border: '1px solid var(--border-subtle)',
               }}
             >
-              <h4 style={{ color: 'var(--gold-400)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                📁 frontend/ (Next.js App Router)
+              <h4 style={{ color: 'var(--gold-400)', marginBottom: '12px' }}>
+                📁 frontend/ (Next.js 16 + Auth Context)
               </h4>
               <ul style={{ listStyle: 'none', fontSize: '0.82rem', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <li>🔸 <code>src/app/globals.css</code> : Tokens de diseño Dorado & Negro puro</li>
-                <li>🔸 <code>src/app/page.tsx</code> : Dashboard principal reactivo y dinámico</li>
-                <li>🔸 <code>src/components/layout/</code> : Navbar, Footer, layouts</li>
-                <li>🔸 <code>src/components/ui/</code> : Componentes reutilizables estilizados</li>
-                <li>🔸 <code>src/components/fitness/</code> : Componentes de rutinas y ejercicios</li>
-                <li>🔸 <code>src/services/api.ts</code> : Cliente HTTP tipado hacia el backend</li>
+                <li>🔸 <code>components/auth/AuthScreen.tsx</code>: Formulario Login & Registro de lujo</li>
+                <li>🔸 <code>context/AuthContext.tsx</code>: Persistencia de sesión en localStorage</li>
+                <li>🔸 <code>services/api.ts</code>: Cliente HTTP para <code>loginApi</code> y <code>registerApi</code></li>
+                <li>🔸 <code>components/layout/Navbar.tsx</code>: Perfil de usuario y Logout activo</li>
+                <li>🔸 <code>app/globals.css</code>: Sistema visual Dorado & Negro puro</li>
               </ul>
             </div>
           </div>

@@ -2,12 +2,15 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { User } from '../../types';
 
 interface NavbarProps {
   apiStatus: 'online' | 'offline' | 'checking';
+  user?: User | null;
+  onLogout?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ apiStatus }) => {
+export const Navbar: React.FC<NavbarProps> = ({ apiStatus, user, onLogout }) => {
   return (
     <nav className="navbar">
       <div className="nav-container">
@@ -40,8 +43,8 @@ export const Navbar: React.FC<NavbarProps> = ({ apiStatus }) => {
           </div>
         </Link>
 
-        {/* Links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
+        {/* Links & Session Profile */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '22px' }}>
           <Link href="#dashboard" style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: 500 }}>
             Dashboard
           </Link>
@@ -75,13 +78,55 @@ export const Navbar: React.FC<NavbarProps> = ({ apiStatus }) => {
               }}
             />
             <span style={{ color: 'var(--text-muted)' }}>
-              API Express: <strong style={{ color: apiStatus === 'online' ? 'var(--gold-400)' : '#ef4444' }}>{apiStatus}</strong>
+              API: <strong style={{ color: apiStatus === 'online' ? 'var(--gold-400)' : '#ef4444' }}>{apiStatus}</strong>
             </span>
           </div>
 
-          <button className="btn-gold" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
-            Acceso VIP
-          </button>
+          {/* User Profile / Logout */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'var(--gradient-gold)',
+                    color: '#070708',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.82rem',
+                    fontWeight: 800,
+                  }}
+                >
+                  {user.firstName?.charAt(0) || 'U'}
+                </span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                    {user.fullName || `${user.firstName} ${user.lastName}`}
+                  </span>
+                  <span style={{ fontSize: '0.68rem', color: 'var(--gold-400)' }}>
+                    Membresía Gold
+                  </span>
+                </div>
+              </div>
+
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="btn-dark"
+                  style={{ padding: '6px 14px', fontSize: '0.78rem' }}
+                >
+                  Cerrar Sesión
+                </button>
+              )}
+            </div>
+          ) : (
+            <button className="btn-gold" style={{ padding: '8px 18px', fontSize: '0.85rem' }}>
+              Acceso VIP
+            </button>
+          )}
         </div>
       </div>
     </nav>
